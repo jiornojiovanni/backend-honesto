@@ -20,11 +20,11 @@ const app = express()
 
 app.post("/login", async (req, res) => {
     let { email, password } = req.body
-    const sql_query = "SELECT 1 FROM persona WHERE mail = ? AND password = ?"
+    const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ? AND password = ?"
 
     connection.query(sql_query, [email, password]).then(([rows, fields]) => {
         if (rows.length > 0) {
-            res.send({ status: 200, msg: "OK" })
+            res.send({ status: 200, msg: "OK", user: { nome: rows[0].nome, cognome: rows[0].cognome } })
         } else {
             res.send({ status: 404, msg: "User not found" })
         }
