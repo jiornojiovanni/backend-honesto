@@ -1,8 +1,9 @@
 require('dotenv').config()
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mysql = require('mysql2/promise');
+const express = require('express')
+const cors = require('cors')
+const bodyParser = require('body-parser')
+const mysql = require('mysql2/promise')
+const jwt = require('jsonwebtoken')
 
 const connection = mysql.createPool({
     host: process.env.HOST,
@@ -20,11 +21,14 @@ const app = express()
 
 app.post("/login", async (req, res) => {
     let { email, password } = req.body
-    const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ? AND password = ?"
+    const sql_query = "SELECT mail FROM persona WHERE mail = ? AND password = ?"
 
     connection.query(sql_query, [email, password]).then(([rows, fields]) => {
         if (rows.length > 0) {
-            res.send({ status: 200, msg: "OK", user: { nome: rows[0].nome, cognome: rows[0].cognome } })
+            payload = rows[0].mail
+            token = signToken(payload)
+
+            res.send({ status: 200, msg: "OK", token: token })
         } else {
             res.send({ status: 404, msg: "User not found" })
         }
@@ -32,6 +36,38 @@ app.post("/login", async (req, res) => {
 
 })
 
+app.get("/user", authenticateToken, (req, res) => {
+    const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ?"
+    
+    connection.query(sql_query, [req.payload.email]).then(([rows, fields]) => {
+        if (rows.length > 0) {
+            res.send({nome: rows[0].nome, cognome: rows[0].cognome})
+        } else {
+            res.send({ status: 500, msg: "Internal server error" })
+        }
+    })
+})
+
+function signToken(email) {
+    return jwt.sign({email: email}, process.env.TOKEN_SECRET, { expiresIn: 3600})
+}
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+
+    if (token == null) return res.sendStatus(401)
+
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
+        if (err) {
+            console.log(err)
+            return res.sendStatus(403)
+        }
+        
+        req.payload = payload
+        next()
+    })
+}
 
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`)
