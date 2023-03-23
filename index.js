@@ -3,7 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const mysql = require('mysql2/promise')
-const jwt = require('jsonwebtoken')
+const auth = require('./auth')
 
 const connection = mysql.createPool({
     host: process.env.HOST,
@@ -26,7 +26,7 @@ app.post("/login", async (req, res) => {
     connection.query(sql_query, [email, password]).then(([rows, fields]) => {
         if (rows.length > 0) {
             payload = rows[0].mail
-            token = signToken(payload)
+            token = auth.signToken(payload)
 
             res.send({ status: 200, msg: "OK", token: token })
         } else {
@@ -36,38 +36,17 @@ app.post("/login", async (req, res) => {
 
 })
 
-app.get("/user", authenticateToken, (req, res) => {
+app.get("/user", auth.authenticateToken, (req, res) => {
     const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ?"
-    
+
     connection.query(sql_query, [req.payload.email]).then(([rows, fields]) => {
         if (rows.length > 0) {
-            res.send({nome: rows[0].nome, cognome: rows[0].cognome})
+            res.send({ nome: rows[0].nome, cognome: rows[0].cognome })
         } else {
             res.send({ status: 500, msg: "Internal server error" })
         }
     })
 })
-
-function signToken(email) {
-    return jwt.sign({email: email}, process.env.TOKEN_SECRET, { expiresIn: 3600})
-}
-
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
-
-    if (token == null) return res.sendStatus(401)
-
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
-        if (err) {
-            console.log(err)
-            return res.sendStatus(403)
-        }
-        
-        req.payload = payload
-        next()
-    })
-}
 
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`)
