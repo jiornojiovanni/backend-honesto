@@ -1,10 +1,14 @@
 require('dotenv').config()
+
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const mysql = require('mysql2/promise')
+const { PeerServer } = require("peer");
+
 const auth = require('./auth')
 
+const peerServer = PeerServer({ port: 9000, path: "/connect"})
 const connection = mysql.createPool({
     host: process.env.HOST,
     user: process.env.USER,
