@@ -2,13 +2,14 @@ require('dotenv').config()
 
 const express = require('express')
 const cors = require('cors')
+const https = require("https");
+const fs = require("fs");
 const bodyParser = require('body-parser')
 const mysql = require('mysql2/promise')
-const { PeerServer } = require("peer");
+const { ExpressPeerServer } = require("peer");
 
 const auth = require('./auth')
 
-const peerServer = PeerServer({ port: 9000, path: "/connect"})
 const connection = mysql.createPool({
     host: process.env.HOST,
     user: process.env.USER,
@@ -16,10 +17,12 @@ const connection = mysql.createPool({
     database: process.env.DB
 })
 
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 3000
 
 const app = express()
-    .use(cors())
+    .use(cors({
+        origin: "*"
+    }))
     .use(bodyParser.json())
     .use(express.static('public'))
 
@@ -55,3 +58,23 @@ app.get("/user", auth.authenticateToken, (req, res) => {
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`)
 })
+
+const server = https
+    .createServer(
+        // Provide the private and public key to the server by reading each
+        // file's content with the readFileSync() method.
+        {
+            key: fs.readFileSync("ssl.key"),
+            cert: fs.readFileSync("ssl.cert")
+        },
+        app
+    )
+    .listen(8080, () => {
+        console.log("HTTPS server is runing at port 8080");
+    });
+
+const peerServer = ExpressPeerServer(server, {
+    path: "/connect",
+});
+
+app.use("/", peerServer);
