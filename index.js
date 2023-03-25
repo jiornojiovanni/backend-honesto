@@ -11,9 +11,9 @@ const { ExpressPeerServer } = require("peer");
 const auth = require('./auth')
 
 const connection = mysql.createPool({
-    host: process.env.HOST,
-    user: process.env.USERNAME,
-    password: process.env.PASSWORD,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB
 })
 
