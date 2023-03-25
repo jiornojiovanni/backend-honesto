@@ -16,5 +16,8 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.2.0",
     "peer": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.36.0"
   }
 }
