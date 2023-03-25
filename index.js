@@ -50,19 +50,29 @@ app.get("/user", auth.authenticateToken, (req, res) => {
         if (rows.length > 0) {
             res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome })
         } else {
-            res.status(500).json()
+            res.status(500).send()
         }
     })
 })
 
 app.put("/visit", auth.authenticateToken, async (req, res) => {
+    const check_Paziente = "SELECT id_persona, mail FROM persona WHERE mail = ? AND tipo = 'paziente'"
     const insert_visita = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')"
     const insert_partecipa = "INSERT INTO partecipa (fk_persona, fk_visita) VALUES(?, ?)"
 
     try {
+        let [rows] = await connection.query(check_Paziente, [req.body.visitEmail])
+        if(rows.length == 0) {
+            res.status(500).send()
+            return
+        }
+        let paziente_id = rows[0].id_persona
+        
+
         let insertId = (await connection.query(insert_visita, [req.body.visitTime, req.body.visitDate]))[0].insertId;
 
         await connection.query(insert_partecipa, [req.payload.id, insertId])
+        await connection.query(insert_partecipa, [paziente_id, insertId])
 
         res.status(200).send();
     } catch (err) {
