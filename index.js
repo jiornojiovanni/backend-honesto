@@ -28,11 +28,11 @@ const app = express()
 
 app.post("/login", async (req, res) => {
     let { email, password } = req.body
-    const sql_query = "SELECT mail FROM persona WHERE mail = ? AND password = ?"
+    const sql_query = "SELECT id_persona, mail FROM persona WHERE mail = ? AND password = ?"
 
     connection.query(sql_query, [email, password]).then(([rows, fields]) => {
         if (rows.length > 0) {
-            payload = rows[0].mail
+            payload = { email: rows[0].mail, id: rows[0].id_persona }
             token = auth.signToken(payload)
 
             res.status(200).send({ token: token })
@@ -45,7 +45,6 @@ app.post("/login", async (req, res) => {
 
 app.get("/user", auth.authenticateToken, (req, res) => {
     const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ?"
-
     connection.query(sql_query, [req.payload.email]).then(([rows, fields]) => {
         if (rows.length > 0) {
             res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome })
@@ -56,16 +55,33 @@ app.get("/user", auth.authenticateToken, (req, res) => {
 })
 
 app.put("/visit", auth.authenticateToken, async (req, res) => {
-    const sql_query = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')"
+    const insert_visita = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')"
+    const insert_partecipa = "INSERT INTO partecipa (fk_persona, fk_visita) VALUES(?, ?)"
 
     try {
-        let result = await connection.query(sql_query, [req.body.visitTime, req.body.visitDate] );
+        let insertId = (await connection.query(insert_visita, [req.body.visitTime, req.body.visitDate]))[0].insertId;
+
+        await connection.query(insert_partecipa, [req.payload.id, insertId])
+
         res.status(200).send();
-    } catch(err) {
+    } catch (err) {
         console.log(err)
         res.status(500).send()
     }
-    
+
+});
+
+app.get("/visit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT "
+
+    try {
+
+        res.status(200).send();
+    } catch (err) {
+        console.log(err)
+        res.status(500).send()
+    }
+
 });
 
 app.listen(port, () => {

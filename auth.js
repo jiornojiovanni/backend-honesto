@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 
-function signToken(email) {
-    return jwt.sign({ email: email }, process.env.TOKEN_SECRET, { expiresIn: 3600 })
+function signToken(payload) {
+    return jwt.sign(payload, process.env.TOKEN_SECRET, { expiresIn: 3600 })
 }
 
 function authenticateToken(req, res, next) {
