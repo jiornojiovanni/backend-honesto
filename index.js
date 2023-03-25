@@ -36,7 +36,7 @@ app.post("/login", async (req, res) => {
             payload = { email: rows[0].mail, id: rows[0].id_persona }
             token = auth.signToken(payload)
 
-            res.status(200).send({ token: token })
+            res.status(200).send({ token: token, expiresIn: 3600 })
         } else {
             res.status(404).send()
         }
