@@ -35,9 +35,9 @@ app.post("/login", async (req, res) => {
             payload = rows[0].mail
             token = auth.signToken(payload)
 
-            res.send({ status: 200, msg: "OK", token: token })
+            res.status(200).send({ token: token })
         } else {
-            res.send({ status: 404, msg: "User not found" })
+            res.status(404).send()
         }
     })
 
@@ -48,12 +48,25 @@ app.get("/user", auth.authenticateToken, (req, res) => {
 
     connection.query(sql_query, [req.payload.email]).then(([rows, fields]) => {
         if (rows.length > 0) {
-            res.send({ nome: rows[0].nome, cognome: rows[0].cognome })
+            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome })
         } else {
-            res.send({ status: 500, msg: "Internal server error" })
+            res.status(500).json()
         }
     })
 })
+
+app.put("/visit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')"
+
+    try {
+        let result = await connection.query(sql_query, [req.body.visitTime, req.body.visitDate] );
+        res.status(200).send();
+    } catch(err) {
+        console.log(err)
+        res.status(500).send()
+    }
+    
+});
 
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`)
