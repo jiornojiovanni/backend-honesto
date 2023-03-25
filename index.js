@@ -14,7 +14,8 @@ const connection = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB
+    database: process.env.DB,
+    dateStrings: true
 })
 
 const port = process.env.PORT || 3000
@@ -72,11 +73,11 @@ app.put("/visit", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/visit", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT "
+    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?"
 
     try {
-
-        res.status(200).send();
+        let [rows] = await connection.query(sql_query, [req.payload.id])
+        res.status(200).send(rows);
     } catch (err) {
         console.log(err)
         res.status(500).send()
