@@ -45,10 +45,10 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/user", auth.authenticateToken, (req, res) => {
-    const sql_query = "SELECT nome, cognome FROM persona WHERE mail = ?";
+    const sql_query = "SELECT nome, cognome, id_persona, mail FROM persona WHERE mail = ?";
     connection.query(sql_query, [req.payload.email]).then(([rows]) => {
         if (rows.length > 0) {
-            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome });
+            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome, id_persona: rows[0].id_persona, email: rows[0].mail });
         } else {
             res.status(500).send();
         }
@@ -93,6 +93,17 @@ app.get("/visit", auth.authenticateToken, async (req, res) => {
         res.status(500).send();
     }
 
+});
+
+app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT p.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND v.id_visita = ? AND p.fk_persona != ?";
+    try {
+        let [rows] = await connection.query(sql_query, [req.query.visitID, req.payload.id]);
+        res.status(200).send({ fk_persona: rows[0].fk_persona});
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
 });
 
 app.listen(port, () => {
