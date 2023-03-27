@@ -127,19 +127,7 @@ const peerServer = ExpressPeerServer(server, {
 
 app.use("/", peerServer);
 
-
-
-
-
-
-
-
-
-
-
-
-
-const io = new Server(server,{
+const io = new Server(5000, {
     cors: {
       origin: "*",
       methods: ["GET", "POST"]
@@ -148,7 +136,7 @@ const io = new Server(server,{
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    socket.on('messagee', (msg) => {
+    socket.on('message', (msg) => {
         socket.broadcast.emit('message', msg);
     });
 
