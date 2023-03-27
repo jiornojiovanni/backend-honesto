@@ -7,7 +7,7 @@ const fs = require("fs");
 const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
 const { ExpressPeerServer } = require("peer");
-
+const { Server } = require("socket.io");
 const auth = require('./auth');
 
 const connection = mysql.createPool({
@@ -119,13 +119,44 @@ const server = https
             cert: fs.readFileSync("ssl.cert")
         },
         app
-    )
-    .listen(8080, () => {
-        console.log("HTTPS server is runing at port 8080");
-    });
-
+    );
+    
 const peerServer = ExpressPeerServer(server, {
     path: "/connect",
 });
 
 app.use("/", peerServer);
+
+
+
+
+
+
+
+
+
+
+
+
+
+const io = new Server(server,{
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('messagee', (msg) => {
+        socket.broadcast.emit('message', msg);
+    });
+
+    socket.on('start', (msg) => {
+        socket.broadcast.emit('start', msg);
+    });
+});
+
+server.listen(8080, () => {
+    console.log("HTTPS server is runing at port 8080");
+});
