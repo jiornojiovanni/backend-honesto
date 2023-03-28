@@ -6,6 +6,8 @@ const https = require("https");
 const fs = require("fs");
 const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
+const PDFDocument = require('pdfkit');
+const { v4: uuidv4 } = require('uuid');
 const { ExpressPeerServer } = require("peer");
 const { Server } = require("socket.io");
 
@@ -46,10 +48,10 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/user", auth.authenticateToken, (req, res) => {
-    const sql_query = "SELECT nome, cognome, id_persona, mail FROM persona WHERE mail = ?";
+    const sql_query = "SELECT nome, cognome, id_persona, mail, tipo FROM persona WHERE mail = ?";
     connection.query(sql_query, [req.payload.email]).then(([rows]) => {
         if (rows.length > 0) {
-            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome, id_persona: rows[0].id_persona, email: rows[0].mail });
+            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome, id_persona: rows[0].id_persona, email: rows[0].mail, tipo: rows[0].tipo });
         } else {
             res.status(500).send();
         }
@@ -107,6 +109,21 @@ app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
     }
 });
 
+app.post("/createdoc", auth.authenticateToken, async (req, res) => {
+    const doc = new PDFDocument;
+    const filename = uuidv4();
+    const title = req.body.title;
+    const text = req.body.text;
+
+    doc.pipe(fs.createWriteStream("./public/" + filename + '.pdf'));
+
+    //creare template
+    doc.text(title);
+    doc.text(text);
+    doc.end();
+    res.status(200).send({uri: filename});
+});
+
 
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
@@ -114,8 +131,6 @@ app.listen(port, () => {
 
 const server = https
     .createServer(
-        // Provide the private and public key to the server by reading each
-        // file's content with the readFileSync() method.
         {
             key: fs.readFileSync("ssl.key"),
             cert: fs.readFileSync("ssl.cert")
