@@ -146,16 +146,17 @@ let counter = 0;
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
  
-    socket.on('join', () => {
-        const room = findOrCreateRoom();
+    socket.on('join', (stanza) => {
+        const room = stanza;
         console.log("room",room);
         socket.join(room);
 
 
   });
-  socket.on('joined', () =>  {
-    const room = findOrCreateRoom();
+  socket.on('joined', (stanza) =>  {
+    const room = stanza;
     counter = counter + 1;
+    console.log("Utenti: "+counter);
     io.emit("userJoinedRoom", counter);
 
   });
@@ -172,20 +173,20 @@ io.on('connection', (socket) => {
 // });
 
     // whenever we receive a 'message' we log it out
-    socket.on("message", (clientMessage) =>  {
+    socket.on("message", (room, clientMessage) =>  {
         if (clientMessage.type === 'signal') {
           const message  = {
             message: clientMessage.message,
             author: '',
             time: Date.now(),
             type: clientMessage.type,
-            room: 12345678,
+            room: room,
           };
           if (clientMessage.for) {
             message.for = clientMessage.for;
           }
 
-            io.to(12345678).emit("private-message", message);
+            io.to(room).emit("private-message", message);
 
         }
       });
@@ -196,18 +197,7 @@ socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
 });
 });
- 
-function findOrCreateRoom() {
-    return 12345678;
-    const rooms = io.sockets.adapter.rooms;
-    for (const [room, clients] of rooms) {
-      if (clients.size < 2 && !room.startsWith("socket:")) {
-        // console.log("Stanza: "+ rooms);
-        return room;
-      }
-    }
-    return socket.id;
-  }
+
  
 
 
