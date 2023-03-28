@@ -46,10 +46,10 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/user", auth.authenticateToken, (req, res) => {
-    const sql_query = "SELECT nome, cognome, id_persona, mail FROM persona WHERE mail = ?";
+    const sql_query = "SELECT nome, cognome, id_persona, mail, tipo FROM persona WHERE mail = ?";
     connection.query(sql_query, [req.payload.email]).then(([rows]) => {
         if (rows.length > 0) {
-            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome, id_persona: rows[0].id_persona, email: rows[0].mail });
+            res.status(200).send({ nome: rows[0].nome, cognome: rows[0].cognome, id_persona: rows[0].id_persona, email: rows[0].mail, tipo: rows[0].tipo });
         } else {
             res.status(500).send();
         }
