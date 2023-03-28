@@ -108,7 +108,7 @@ app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
 });
 
 
-const expressServer = app.listen(port, () => {
+app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
 
@@ -133,7 +133,7 @@ const peerServer = ExpressPeerServer(server, {
 app.use("/", peerServer);
 
 
-const io = new Server(expressServer, {
+const io = new Server(server, {
     cors: {
         origin: "*",
     }
