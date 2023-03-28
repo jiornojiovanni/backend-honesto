@@ -7,6 +7,7 @@ const fs = require("fs");
 const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
 const { ExpressPeerServer } = require("peer");
+const { Server } = require("socket.io");
 
 const auth = require('./auth');
 
@@ -106,7 +107,8 @@ app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+
+const expressServer = app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
 
@@ -129,3 +131,84 @@ const peerServer = ExpressPeerServer(server, {
 });
 
 app.use("/", peerServer);
+
+
+const io = new Server(expressServer, {
+    cors: {
+        origin: "*",
+    }
+});
+
+
+
+let counter = 0;
+ 
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+ 
+    socket.on('join', () => {
+        const room = findOrCreateRoom();
+        console.log("room",room);
+        socket.join(room);
+
+
+  });
+  socket.on('joined', () =>  {
+    const room = findOrCreateRoom();
+    counter = counter + 1;
+    io.emit("userJoinedRoom", counter);
+
+  });
+ 
+ 
+// socket.on('signal', (data) => {
+//     console.log('Segnale rievuto')
+//     console.log(data)
+//     const room = socket.rooms.values().next().value;
+ 
+//     if (room) {
+//         socket.to(room).emit('signal', data);
+//     }
+// });
+
+    // whenever we receive a 'message' we log it out
+    socket.on("message", (clientMessage) =>  {
+        if (clientMessage.type === 'signal') {
+          const message  = {
+            message: clientMessage.message,
+            author: '',
+            time: Date.now(),
+            type: clientMessage.type,
+            room: 12345678,
+          };
+          if (clientMessage.for) {
+            message.for = clientMessage.for;
+          }
+
+            io.to(12345678).emit("private-message", message);
+
+        }
+      });
+ 
+socket.on('disconnect', () => {
+    if (counter - 1 < 0) counter = 0;
+    else counter = counter  - 1;
+    console.log('Client disconnected:', socket.id);
+});
+});
+ 
+function findOrCreateRoom() {
+    return 12345678;
+    const rooms = io.sockets.adapter.rooms;
+    for (const [room, clients] of rooms) {
+      if (clients.size < 2 && !room.startsWith("socket:")) {
+        // console.log("Stanza: "+ rooms);
+        return room;
+      }
+    }
+    return socket.id;
+  }
+ 
+
+
+
