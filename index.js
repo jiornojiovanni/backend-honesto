@@ -65,12 +65,12 @@ app.put("/visit", auth.authenticateToken, async (req, res) => {
 
     try {
         let [rows] = await connection.query(check_Paziente, [req.body.visitEmail]);
-        if(rows.length == 0) {
+        if (rows.length == 0) {
             res.status(500).send();
             return;
         }
         let paziente_id = rows[0].id_persona;
-        
+
 
         let insertId = (await connection.query(insert_visita, [req.body.visitTime, req.body.visitDate]))[0].insertId;
 
@@ -102,26 +102,47 @@ app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
     const sql_query = "SELECT p.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND v.id_visita = ? AND p.fk_persona != ?";
     try {
         let [rows] = await connection.query(sql_query, [req.query.visitID, req.payload.id]);
-        res.status(200).send({ fk_persona: rows[0].fk_persona});
+        res.status(200).send({ fk_persona: rows[0].fk_persona });
     } catch (err) {
         console.log(err);
         res.status(500).send();
     }
 });
 
-app.post("/createdoc", auth.authenticateToken, async (req, res) => {
+app.post("/createdoc", auth.authenticateToken,async (req, res) => {
     const doc = new PDFDocument;
     const filename = uuidv4();
     const title = req.body.title;
     const text = req.body.text;
 
     doc.pipe(fs.createWriteStream("./public/" + filename + '.pdf'));
+    doc.font('./public/fonts/calibri.ttf');
 
     //creare template
-    doc.text(title);
-    doc.text(text);
+    doc.image("./public/images/honesto.png", 80, 57, { width: 200 })
+		.fillColor('#444444')
+		.fontSize(10)
+		.text('Giovanni Palmieri', 160, 65, { align: 'right' })
+		.text('28/03/2023', 160, 80, { align: 'right' })
+		.moveDown();
+
+    // and some justified text wrapped into columns
+    doc
+        .font('./public/fonts/calibrib.ttf', 18)
+        .text("Titolo: " + title, 80, 150)
+        .moveDown()
+        .text("Descrizione:")
+        .font('./public/fonts/calibri.ttf', 10)
+        .text(text, {
+            align: 'justify',
+            columns: 1,
+            height: 300,
+            ellipsis: true
+        });
+
+    // end and display the document in the iframe to the right
     doc.end();
-    res.status(200).send({uri: filename});
+    res.status(200).send({ uri: filename });
 });
 
 
@@ -157,73 +178,73 @@ const io = new Server(server, {
 
 
 let counter = 0;
- 
+
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
- 
+
     socket.on('join', () => {
         const room = findOrCreateRoom();
         console.log("room",room);
         socket.join(room);
 
 
-  });
-  socket.on('joined', () =>  {
-    const room = findOrCreateRoom();
-    counter = counter + 1;
-    io.emit("userJoinedRoom", counter);
+    });
+    socket.on('joined', () =>  {
+        const room = findOrCreateRoom();
+        counter = counter + 1;
+        io.emit("userJoinedRoom", counter);
 
-  });
- 
- 
-// socket.on('signal', (data) => {
-//     console.log('Segnale rievuto')
-//     console.log(data)
-//     const room = socket.rooms.values().next().value;
- 
-//     if (room) {
-//         socket.to(room).emit('signal', data);
-//     }
-// });
+    });
+
+
+    // socket.on('signal', (data) => {
+    //     console.log('Segnale rievuto')
+    //     console.log(data)
+    //     const room = socket.rooms.values().next().value;
+
+    //     if (room) {
+    //         socket.to(room).emit('signal', data);
+    //     }
+    // });
 
     // whenever we receive a 'message' we log it out
     socket.on("message", (clientMessage) =>  {
         if (clientMessage.type === 'signal') {
-          const message  = {
-            message: clientMessage.message,
-            author: '',
-            time: Date.now(),
-            type: clientMessage.type,
-            room: 12345678,
-          };
-          if (clientMessage.for) {
-            message.for = clientMessage.for;
-          }
+            const message  = {
+                message: clientMessage.message,
+                author: '',
+                time: Date.now(),
+                type: clientMessage.type,
+                room: 12345678,
+            };
+            if (clientMessage.for) {
+                message.for = clientMessage.for;
+            }
 
             io.to(12345678).emit("private-message", message);
 
         }
-      });
- 
-socket.on('disconnect', () => {
-    if (counter - 1 < 0) counter = 0;
-    else counter = counter  - 1;
-    console.log('Client disconnected:', socket.id);
+    });
+
+    socket.on('disconnect', () => {
+        if (counter - 1 < 0) counter = 0;
+        else counter = counter  - 1;
+        console.log('Client disconnected:', socket.id);
+    });
 });
-});
- 
+
 function findOrCreateRoom() {
     return 12345678;
     const rooms = io.sockets.adapter.rooms;
     for (const [room, clients] of rooms) {
-      if (clients.size < 2 && !room.startsWith("socket:")) {
-        // console.log("Stanza: "+ rooms);
-        return room;
-      }
+        if (clients.size < 2 && !room.startsWith("socket:")) {
+            // console.log("Stanza: "+ rooms);
+            return room;
+        }
     }
     return socket.id;
-  }
- 
+}
+
 
 
 
