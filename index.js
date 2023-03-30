@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const https = require("https");
 const fs = require("fs");
+const path = require("path");
 const bodyParser = require('body-parser');
 const mysql = require('mysql2/promise');
 const PDFDocument = require('pdfkit');
@@ -28,7 +29,7 @@ const app = express()
         origin: "*"
     }))
     .use(bodyParser.json())
-    .use(express.static('public'));
+    .use(express.static(path.join(__dirname, 'public/')));
 
 app.post("/login", async (req, res) => {
     let { email, password } = req.body;
