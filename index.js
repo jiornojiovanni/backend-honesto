@@ -116,11 +116,11 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     const title = req.body.title;
     const text = req.body.text;
 
-    doc.pipe(fs.createWriteStream("./public/" + filename + '.pdf'));
-    doc.font('./public/fonts/calibri.ttf');
-
+    doc.pipe(fs.createWriteStream(path.join(__dirname, 'public/') + filename + '.pdf'));
+    doc.font(path.join(__dirname, 'public/') + "fonts/calibri.ttf");
+    
     //creare template
-    doc.image("./public/images/honesto.png", 80, 57, { width: 200 })
+    doc.image(path.join(__dirname, 'public/') + "images/honesto.png", 80, 57, { width: 200 })
 		.fillColor('#444444')
 		.fontSize(10)
 		.text('Giovanni Palmieri', 160, 65, { align: 'right' })
@@ -129,11 +129,11 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
 
     // and some justified text wrapped into columns
     doc
-        .font('./public/fonts/calibrib.ttf', 18)
+        .font(path.join(__dirname, 'public/') + 'fonts/calibrib.ttf', 18)
         .text("Titolo: " + title, 80, 150)
         .moveDown()
         .text("Descrizione:")
-        .font('./public/fonts/calibri.ttf', 10)
+        .font(path.join(__dirname, 'public/') + 'fonts/calibri.ttf', 10)
         .text(text, {
             align: 'justify',
             columns: 1,
