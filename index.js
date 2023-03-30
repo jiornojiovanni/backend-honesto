@@ -157,7 +157,7 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/documents", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT DISTINCT documentazione.nome_documento, documentazione.timestamp_creazione, documentazione.uri_documento FROM documentazione NATURAL JOIN visita NATURAL JOIN partecipa NATURAL JOIN persona WHERE persona.id_persona = ?";
+    const sql_query = "SELECT DISTINCT d.nome_documento, d.timestamp_creazione, d.uri_documento FROM documentazione d, visita v , partecipa p , persona p2 WHERE d.fk_visita = v.id_visita AND p.fk_visita = v.id_visita AND p.fk_persona = p2.id_persona  AND p2.id_persona = ?";
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id]);
