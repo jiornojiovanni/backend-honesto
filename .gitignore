@@ -16,3 +16,4 @@ benchmarks/graphs
 
 *.key
 *.cert
+*.pdf
