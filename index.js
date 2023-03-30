@@ -155,6 +155,18 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     }  
 });
 
+app.get("/documents", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT DISTINCT documentazione.nome_documento, documentazione.timestamp_creazione, documentazione.uri_documento FROM documentazione NATURAL JOIN visita NATURAL JOIN partecipa NATURAL JOIN persona WHERE persona.id_persona = ?";
+
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+
+});
 
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
