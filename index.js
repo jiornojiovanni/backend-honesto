@@ -109,7 +109,7 @@ app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
     }
 });
 
-app.post("/createdoc", auth.authenticateToken,async (req, res) => {
+app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     const doc = new PDFDocument;
     const filename = uuidv4();
     const title = req.body.title;
@@ -142,7 +142,17 @@ app.post("/createdoc", auth.authenticateToken,async (req, res) => {
 
     // end and display the document in the iframe to the right
     doc.end();
-    res.status(200).send({ uri: filename });
+
+    try {
+        const uri = "/" + filename +".pdf";
+        const sql_query = "INSERT INTO documentazione (nome_documento, timestamp_creazione, fk_tipologia_documento, fk_visita, uri_documento) VALUES (?, NOW(), ?, ?, ?)";
+        await connection.query(sql_query, [filename, req.body.type, req.body.visitID, uri]);
+
+        res.status(200).send({ uri: uri });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send();
+    }  
 });
 
 
