@@ -175,8 +175,8 @@ app.listen(port, () => {
 const server = https
     .createServer(
         {
-            key: fs.readFileSync("ssl.key"),
-            cert: fs.readFileSync("ssl.cert")
+            key: fs.readFileSync(process.env.SSL_KEY),
+            cert: fs.readFileSync(process.env.SSL_CERT)
         },
         app
     )
