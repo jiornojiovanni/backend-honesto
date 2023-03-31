@@ -181,6 +181,55 @@ app.post("/updatevisit", auth.authenticateToken, async (req, res) => {
     }
 });
 
+app.post("/startvisit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE visita v SET v.stato = 'in corso' WHERE v.id_visita = ?";
+    try {
+        await connection.query(sql_query, [req.body.visitID]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.post("/stopvisit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE visita v SET v.stato = 'terminata' WHERE v.id_visita = ?";
+    try {
+        await connection.query(sql_query, [req.body.visitID]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.get("/patients", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT DISTINCT  p.nome, p.cognome, p.id_persona " +
+        "FROM persona p, partecipa p2 " +
+        "WHERE p2.fk_persona = p.id_persona AND p2.fk_persona != ? AND p2.fk_visita IN " +
+        "(SELECT v.id_visita  from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?)";
+
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id, req.payload.id]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.get("/allpatients", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT p.id_persona, p.nome, p.cognome FROM persona p WHERE p.tipo = 'paziente'";
+
+    try {
+        let [rows] = await connection.query(sql_query);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
