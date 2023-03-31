@@ -118,7 +118,7 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     doc.pipe(fs.createWriteStream(path.join(__dirname, 'public/') + filename + '.pdf'));
     doc.font(path.join(__dirname, 'public/') + "fonts/calibri.ttf");
     
-    doc.image(path.join(__dirname, 'public/') + "images/honesto.png", 80, 57, { width: 200 })
+    doc.image(path.join(__dirname, 'public/') + "images/logo.png", 80, 57, { width: 200 })
 		.fillColor('#444444')
 		.fontSize(10)
 		.text('Giovanni Palmieri', 160, 65, { align: 'right' })
@@ -207,6 +207,18 @@ app.get("/patients", auth.authenticateToken, async (req, res) => {
         "FROM persona p, partecipa p2 " +
         "WHERE p2.fk_persona = p.id_persona AND p2.fk_persona != ? AND p2.fk_visita IN " +
         "(SELECT v.id_visita  from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?)";
+
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id, req.payload.id]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.get("/patient", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT p.nome, p.cognome, p.id_persona, p.mail FROM persona p WHERE p.id_persona=?";
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id, req.payload.id]);
