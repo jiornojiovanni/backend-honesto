@@ -263,8 +263,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        if (counter - 1 < 0) counter = 0;
-        else counter = counter  - 1;
+       
         console.log('Client disconnected:', socket.id);
     });
 });
