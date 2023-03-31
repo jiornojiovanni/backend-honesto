@@ -166,6 +166,21 @@ app.get("/documents", auth.authenticateToken, async (req, res) => {
 
 });
 
+app.post("/updatevisit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE partecipa p SET p.ora = ?, p.data = ? WHERE p.ora IS NULL AND p.data IS NULL AND p.fk_persona = ? AND p.fk_visita = ?";
+    const datetime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const date = datetime.split(' ')[0];
+    const time = datetime.split(' ')[1];
+
+    try {
+        await connection.query(sql_query, [time, date, req.payload.id, req.body.visitID]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
