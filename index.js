@@ -225,8 +225,8 @@ io.on('connection', (socket) => {
 
   });
   socket.on('joined', (stanza) =>  {
-    const room = stanza;
-    counter = counter + 1;
+    
+    counter = io.sockets.adapter.rooms.get(stanza).size;
     console.log("Utenti: "+counter);
     io.emit("userJoinedRoom", counter);
 
