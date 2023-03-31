@@ -19,10 +19,9 @@ const connection = mysql.createPool({
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB,
+    port: process.env.DB_PORT,
     dateStrings: true
 });
-
-const port = process.env.PORT || 3000;
 
 const app = express()
     .use(cors({
@@ -230,8 +229,8 @@ app.get("/allpatients", auth.authenticateToken, async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`Express server listening on port ${port}`);
+app.listen(process.env.EXPRESS_PORT, () => {
+    console.log(`Express server listening on port ${process.env.EXPRESS_PORT}`);
 });
 
 const server = https
@@ -242,8 +241,8 @@ const server = https
         },
         app
     )
-    .listen(8080, () => {
-        console.log("HTTPS server is runing at port 8080");
+    .listen(process.env.HTTPS_PORT, () => {
+        console.log(`HTTPS server is runing at port ${process.env.HTTPS_PORT}`);
     });
 
 const peerServer = ExpressPeerServer(server, {
