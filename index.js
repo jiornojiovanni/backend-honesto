@@ -58,6 +58,39 @@ app.get("/user", auth.authenticateToken, (req, res) => {
     });
 });
 
+app.put("/user", async (req, res) => {
+    const sql_query = "INSERT into persona (nome, cognome, mail, password, telefono, data_nascita, provincia, cap, tipo, fk_specializzazione) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    try {
+        await connection.query(sql_query, [
+            req.body.nome,
+            req.body.cognome,
+            req.body.mail,
+            req.body.password,
+            req.body.telefono,
+            req.body.data_nascita,
+            req.body.provincia,
+            req.body.cap,
+            req.body.tipo,
+            req.body.fk_specializzazione
+        ]);
+        res.status(200).json();
+    } catch (error) {
+        console.error(error);
+        res.status(500).json();
+    }
+});
+
+app.get("/specialties", async (req, res) => {
+    const sql_query = "SELECT * from specializzazione";
+    try {
+        let [rows] = await connection.query(sql_query);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json();
+    }
+});
+
 app.put("/visit", auth.authenticateToken, async (req, res) => {
     const check_Paziente = "SELECT id_persona, mail FROM persona WHERE mail = ? AND tipo = 'paziente'";
     const insert_visita = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')";
@@ -157,6 +190,19 @@ app.get("/documents", auth.authenticateToken, async (req, res) => {
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+
+});
+
+app.post("/documents", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT DISTINCT d.nome_documento, d.timestamp_creazione, d.uri_documento FROM documentazione d, visita v , partecipa p , persona p2 WHERE d.fk_visita = v.id_visita AND p.fk_visita = v.id_visita AND p.fk_persona = p2.id_persona  AND p2.id_persona = ?";
+
+    try {
+        let [rows] = await connection.query(sql_query, [req.body.patientID]);
         res.status(200).send(rows);
     } catch (err) {
         console.log(err);
