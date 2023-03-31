@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const fileUpload = require("express-fileupload");
 const cors = require('cors');
 const https = require("https");
 const fs = require("fs");
@@ -28,7 +29,38 @@ const app = express()
         origin: "*"
     }))
     .use(bodyParser.json())
+    .use(fileUpload({
+        createParentPath: true,
+    }))
     .use(express.static(path.join(__dirname, 'public/')));
+
+app.post("/upload", (req, res) => {
+    if (!req.files) {
+        return res.status(400).send();
+    }
+
+    const file = req.files.file;
+    const filepath = path.join(__dirname, 'public') + "/files/" + file.name;
+
+    file.mv(filepath, async (err) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        try {
+            const type = 2;
+            const uri = "/files/" + file.name;
+            const sql_query = "INSERT INTO documentazione (nome_documento, timestamp_creazione, fk_tipologia_documento, fk_visita, uri_documento) VALUES (?, NOW(), ?, ?, ?)";
+            await connection.query(sql_query, [file.name, type, Number(req.body.visitID), uri]);
+    
+            res.status(200).send({ uri: uri });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send();
+        }  
+    });
+
+
+});
 
 app.post("/login", async (req, res) => {
     let { email, password } = req.body;
