@@ -87,7 +87,7 @@ app.put("/visit", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/visit", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?";
+    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.data_programmata DESC";
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id]);
@@ -204,7 +204,7 @@ app.post("/stopvisit", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/patients", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT DISTINCT  p.nome, p.cognome, p.id_persona " +
+    const sql_query = "SELECT DISTINCT  p.nome, p.cognome, p.id_persona, p.mail " +
         "FROM persona p, partecipa p2 " +
         "WHERE p2.fk_persona = p.id_persona AND p2.fk_persona != ? AND p2.fk_visita IN " +
         "(SELECT v.id_visita  from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?)";
@@ -219,7 +219,7 @@ app.get("/patients", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/allpatients", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT p.id_persona, p.nome, p.cognome FROM persona p WHERE p.tipo = 'paziente'";
+    const sql_query = "SELECT p.id_persona, p.nome, p.cognome, p.mail FROM persona p WHERE p.tipo = 'paziente'";
 
     try {
         let [rows] = await connection.query(sql_query);
