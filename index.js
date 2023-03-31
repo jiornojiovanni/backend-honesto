@@ -324,6 +324,17 @@ app.get("/allpatients", auth.authenticateToken, async (req, res) => {
     }
 });
 
+app.post("/visitname", auth.authenticateToken, async (req, res) => {
+   const sql_query = "SELECT p.* FROM persona p, visita v, partecipa p2 WHERE p2.fk_visita = v.id_visita AND p2.fk_persona = p.id_persona AND p.id_persona != ? AND v.id_visita = ?"; 
+   try {
+    let [rows] = await connection.query(sql_query, [req.payload.id, req.body.visitid]);
+    res.status(200).send(rows[0]);
+} catch (err) {
+    console.log(err);
+    res.status(500).send();
+}
+});
+
 app.listen(process.env.EXPRESS_PORT, () => {
     console.log(`Express server listening on port ${process.env.EXPRESS_PORT}`);
 });
