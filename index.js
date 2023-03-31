@@ -119,7 +119,6 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     doc.pipe(fs.createWriteStream(path.join(__dirname, 'public/') + filename + '.pdf'));
     doc.font(path.join(__dirname, 'public/') + "fonts/calibri.ttf");
     
-    //creare template
     doc.image(path.join(__dirname, 'public/') + "images/honesto.png", 80, 57, { width: 200 })
 		.fillColor('#444444')
 		.fontSize(10)
@@ -127,7 +126,6 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
 		.text('28/03/2023', 160, 80, { align: 'right' })
 		.moveDown();
 
-    // and some justified text wrapped into columns
     doc
         .font(path.join(__dirname, 'public/') + 'fonts/calibrib.ttf', 18)
         .text("Titolo: " + title, 80, 150)
@@ -141,7 +139,6 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
             ellipsis: true
         });
 
-    // end and display the document in the iframe to the right
     doc.end();
 
     try {
