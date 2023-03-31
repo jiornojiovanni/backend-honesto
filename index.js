@@ -60,6 +60,11 @@ app.get("/user", auth.authenticateToken, (req, res) => {
 
 app.put("/user", async (req, res) => {
     const sql_query = "INSERT into persona (nome, cognome, mail, password, telefono, data_nascita, provincia, cap, tipo, fk_specializzazione) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    let spec = null;
+    if(req.body.fk_specializzazione != '') {
+        spec = req.body.fk_specializzazione;
+    }
+    
     try {
         await connection.query(sql_query, [
             req.body.nome,
@@ -71,7 +76,7 @@ app.put("/user", async (req, res) => {
             req.body.provincia,
             req.body.cap,
             req.body.tipo,
-            req.body.fk_specializzazione
+            spec
         ]);
         res.status(200).json();
     } catch (error) {
