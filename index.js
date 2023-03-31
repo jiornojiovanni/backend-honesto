@@ -181,6 +181,28 @@ app.post("/updatevisit", auth.authenticateToken, async (req, res) => {
     }
 });
 
+app.post("/startvisit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE visita v SET v.stato = 'in corso' WHERE v.id_visita = ?";
+    try {
+        await connection.query(sql_query, [req.body.visitID]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.post("/stopvisit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE visita v SET v.stato = 'terminata' WHERE v.id_visita = ?";
+    try {
+        await connection.query(sql_query, [req.body.visitID]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.listen(port, () => {
     console.log(`Express server listening on port ${port}`);
 });
