@@ -156,7 +156,7 @@ app.put("/visit", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/visit", auth.authenticateToken, async (req, res) => {
-    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.data_programmata DESC";
+    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.stato ASC, v.data_programmata DESC";
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id]);
