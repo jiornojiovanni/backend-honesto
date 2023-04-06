@@ -208,14 +208,26 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     const filename = uuidv4();
     const title = req.body.title;
     const text = req.body.text;
+    const userid = req.payload.id;
+    let nome = "";
+    let cognome = "";
+    try {
+        const sql_query = "SELECT nome, cognome FROM persona WHERE id_persona = ?";
+        const [rows] = await connection.query(sql_query, [userid]);
+        nome = rows[0].nome;
+        cognome = rows[0].cognome;
+    } catch (error) {
+        console.error(error);
+        res.status(500).send();
+    }
 
-    doc.pipe(fs.createWriteStream(path.join(__dirname, 'public/') + filename + '.pdf'));
+    doc.pipe(fs.createWriteStream(path.join(__dirname, 'public/files/') + filename + '.pdf'));
     doc.font(path.join(__dirname, 'public/') + "fonts/calibri.ttf");
     
     doc.image(path.join(__dirname, 'public/') + "images/logo.png", 80, 57, { width: 200 })
 		.fillColor('#444444')
 		.fontSize(10)
-		.text('Giovanni Palmieri', 160, 65, { align: 'right' })
+		.text(nome + " " + cognome, 160, 65, { align: 'right' })
 		.text('28/03/2023', 160, 80, { align: 'right' })
 		.moveDown();
 
@@ -235,7 +247,7 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
     doc.end();
 
     try {
-        const uri = "/" + filename +".pdf";
+        const uri = "/files/" + filename +".pdf";
         const sql_query = "INSERT INTO documentazione (nome_documento, timestamp_creazione, fk_tipologia_documento, fk_visita, uri_documento) VALUES (?, NOW(), ?, ?, ?)";
         await connection.query(sql_query, [filename, req.body.type, req.body.visitID, uri]);
 
