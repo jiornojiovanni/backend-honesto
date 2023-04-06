@@ -40,17 +40,19 @@ app.post("/upload", (req, res) => {
     }
 
     const file = req.files.file;
-    const filepath = path.join(__dirname, 'public') + "/files/" + file.name;
+    const newFilename = uuidv4() + path.extname(file.name);
+    const filepath = path.join(__dirname, 'public') + "/files/" + newFilename;
+    const name = path.basename(file.name, path.extname(file.name));
 
     file.mv(filepath, async (err) => {
         if (err) {
             return res.status(500).send(err);
         }
         try {
-            const type = 2;
-            const uri = "/files/" + file.name;
+            const type = 3; //Tipo file
+            const uri = "/files/" + newFilename;
             const sql_query = "INSERT INTO documentazione (nome_documento, timestamp_creazione, fk_tipologia_documento, fk_visita, uri_documento) VALUES (?, NOW(), ?, ?, ?)";
-            await connection.query(sql_query, [file.name, type, Number(req.body.visitID), uri]);
+            await connection.query(sql_query, [name, type, Number(req.body.visitID), uri]);
     
             res.status(200).send({ uri: uri });
         } catch (error) {
@@ -248,8 +250,9 @@ app.post("/createdoc", auth.authenticateToken, async (req, res) => {
 
     try {
         const uri = "/files/" + filename +".pdf";
+        const type = 2; //Tipo taccuino
         const sql_query = "INSERT INTO documentazione (nome_documento, timestamp_creazione, fk_tipologia_documento, fk_visita, uri_documento) VALUES (?, NOW(), ?, ?, ?)";
-        await connection.query(sql_query, [filename, req.body.type, req.body.visitID, uri]);
+        await connection.query(sql_query, [title, type, req.body.visitID, uri]);
 
         res.status(200).send({ uri: uri });
     } catch (error) {
