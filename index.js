@@ -351,6 +351,18 @@ app.get("/doctors", async (req, res) => {
     }
 });
 
+app.get("/caregivers", async (req, res) => {
+    const sql_query = "SELECT id_persona, nome, cognome, mail FROM persona WHERE tipo = 'caregiver'";
+
+    try {
+        let [rows] = await connection.query(sql_query);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.post("/patient", auth.authenticateToken, async (req, res) => {
     const sql_query = "SELECT p.nome, p.cognome, p.id_persona, p.mail FROM persona p WHERE p.id_persona=?";
 
