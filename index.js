@@ -131,23 +131,23 @@ app.get("/specialties", async (req, res) => {
 });
 
 app.put("/visit", auth.authenticateToken, async (req, res) => {
-    const check_Paziente = "SELECT id_persona, mail FROM persona WHERE mail = ? AND tipo = 'paziente'";
+    const check = "SELECT id_persona, mail FROM persona WHERE mail = ?";
     const insert_visita = "INSERT INTO visita (ora_programmata, data_programmata, stato) VALUES (?, ?, 'programmata')";
     const insert_partecipa = "INSERT INTO partecipa (fk_persona, fk_visita) VALUES(?, ?)";
 
     try {
-        let [rows] = await connection.query(check_Paziente, [req.body.visitEmail]);
+        let [rows] = await connection.query(check, [req.body.visitEmail]);
         if (rows.length == 0) {
             res.status(500).send();
             return;
         }
-        let paziente_id = rows[0].id_persona;
+        let other_id = rows[0].id_persona;
 
 
         let insertId = (await connection.query(insert_visita, [req.body.visitTime, req.body.visitDate]))[0].insertId;
 
         await connection.query(insert_partecipa, [req.payload.id, insertId]);
-        await connection.query(insert_partecipa, [paziente_id, insertId]);
+        await connection.query(insert_partecipa, [other_id, insertId]);
 
         res.status(200).send();
     } catch (err) {
@@ -332,6 +332,18 @@ app.get("/patients", auth.authenticateToken, async (req, res) => {
 
     try {
         let [rows] = await connection.query(sql_query, [req.payload.id, req.payload.id]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.get("/doctors", async (req, res) => {
+    const sql_query = "SELECT id_persona, nome, cognome, mail, telefono, data_nascita, provincia, cap, fk_specializzazione FROM persona WHERE tipo = 'medico'";
+
+    try {
+        let [rows] = await connection.query(sql_query);
         res.status(200).send(rows);
     } catch (err) {
         console.log(err);
