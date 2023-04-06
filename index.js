@@ -168,6 +168,30 @@ app.get("/visit", auth.authenticateToken, async (req, res) => {
 
 });
 
+app.delete("/visit", auth.authenticateToken, async (req, res) => {
+    const partecipa_query = "DELETE FROM partecipa WHERE fk_visita = ?";
+    const visit_query = "DELETE FROM visita  WHERE id_visita  = ?";
+    try {
+        await connection.query(partecipa_query, [req.payload.id_visita]);
+        await connection.query(visit_query, [req.payload.id_visita]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.post("/visit", auth.authenticateToken, async (req, res) => {
+    const sql_query = "UPDATE honesto.visita SET ora_programmata = ?, data_programmata = ?, WHERE id_visita = ?";
+    try {
+        await connection.query(sql_query, [req.body.ora, req.body.data, req.payload.id_visita]);
+        res.status(200).send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.get("/visitpartecipants", auth.authenticateToken, async (req, res) => {
     const sql_query = "SELECT p.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND v.id_visita = ? AND p.fk_persona != ?";
     try {
@@ -334,6 +358,7 @@ app.post("/visitname", auth.authenticateToken, async (req, res) => {
     res.status(500).send();
 }
 });
+
 
 app.listen(process.env.EXPRESS_PORT, () => {
     console.log(`Express server listening on port ${process.env.EXPRESS_PORT}`);
