@@ -176,6 +176,19 @@ app.get("/visit", auth.authenticateToken, async (req, res) => {
 
 });
 
+app.post("/visitRange", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.stato ASC, v.data_programmata DESC LIMIT ? OFFSET ?";
+    console.table(req.body);
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id, req.body.pageSize, req.body.pageIndex]);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+
+});
+
 app.delete("/visit", auth.authenticateToken, async (req, res) => {
     const partecipa_query = "DELETE FROM partecipa WHERE fk_visita = ?";
     const visit_query = "DELETE FROM visita  WHERE id_visita  = ?";
