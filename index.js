@@ -93,12 +93,17 @@ app.get("/user", auth.authenticateToken, (req, res) => {
 });
 
 app.put("/user", async (req, res) => {
-    const sql_query = "INSERT into persona (nome, cognome, mail, password, telefono, data_nascita, provincia, cap, tipo, fk_specializzazione) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const sql_query = "INSERT into persona (nome, cognome, mail, password, telefono, data_nascita, provincia, cap, tipo, fk_specializzazione, fk_caregiver) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     let spec = null;
+    let caregiver = null;
     if(req.body.fk_specializzazione != '') {
         spec = req.body.fk_specializzazione;
     }
     
+    if(req.body.fk_caregiver != '') {
+        caregiver = req.body.fk_caregiver;
+    }
+
     try {
         await connection.query(sql_query, [
             req.body.nome,
@@ -110,7 +115,8 @@ app.put("/user", async (req, res) => {
             req.body.provincia,
             req.body.cap,
             req.body.tipo,
-            spec
+            spec,
+            caregiver
         ]);
         res.status(200).json();
     } catch (error) {
