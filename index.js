@@ -324,12 +324,12 @@ app.get("/patients", auth.authenticateToken, async (req, res) => {
     }
 });
 
-app.get("/patient", auth.authenticateToken, async (req, res) => {
+app.post("/patient", auth.authenticateToken, async (req, res) => {
     const sql_query = "SELECT p.nome, p.cognome, p.id_persona, p.mail FROM persona p WHERE p.id_persona=?";
 
     try {
-        let [rows] = await connection.query(sql_query, [req.payload.id, req.payload.id]);
-        res.status(200).send(rows);
+        let [rows] = await connection.query(sql_query, [req.body.id]);
+        res.status(200).send(rows[0]);
     } catch (err) {
         console.log(err);
         res.status(500).send();
