@@ -172,8 +172,8 @@ app.delete("/visit", auth.authenticateToken, async (req, res) => {
     const partecipa_query = "DELETE FROM partecipa WHERE fk_visita = ?";
     const visit_query = "DELETE FROM visita  WHERE id_visita  = ?";
     try {
-        await connection.query(partecipa_query, [req.payload.id_visita]);
-        await connection.query(visit_query, [req.payload.id_visita]);
+        await connection.query(partecipa_query, [req.body.id_visita]);
+        await connection.query(visit_query, [req.body.id_visita]);
         res.status(200).send();
     } catch (err) {
         console.log(err);
@@ -184,7 +184,7 @@ app.delete("/visit", auth.authenticateToken, async (req, res) => {
 app.post("/visit", auth.authenticateToken, async (req, res) => {
     const sql_query = "UPDATE honesto.visita SET ora_programmata = ?, data_programmata = ?, WHERE id_visita = ?";
     try {
-        await connection.query(sql_query, [req.body.ora, req.body.data, req.payload.id_visita]);
+        await connection.query(sql_query, [req.body.ora, req.body.data, req.body.id_visita]);
         res.status(200).send();
     } catch (err) {
         console.log(err);
