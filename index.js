@@ -176,11 +176,22 @@ app.get("/visit", auth.authenticateToken, async (req, res) => {
 
 });
 
+app.get("/visitCount", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT COUNT(v.id_visita) as conto from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?";
+
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id]);
+        res.status(200).send(rows[0]);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
 app.post("/visitRange", auth.authenticateToken, async (req, res) => {
     const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.stato ASC, v.data_programmata DESC LIMIT ? OFFSET ?";
-    console.table(req.body);
     try {
-        let [rows] = await connection.query(sql_query, [req.payload.id, req.body.pageSize, req.body.pageIndex]);
+        let [rows] = await connection.query(sql_query, [req.payload.id, req.body.pageSize, req.body.pageIndex * req.body.pageSize]);
         res.status(200).send(rows);
     } catch (err) {
         console.log(err);
@@ -431,7 +442,7 @@ const server = https
         app
     )
     .listen(process.env.HTTPS_PORT, () => {
-        console.log(`HTTPS server is runing at port ${process.env.HTTPS_PORT}`);
+        console.log(`HTTPS server is running at port ${process.env.HTTPS_PORT}`);
     });
 
 const peerServer = ExpressPeerServer(server, {
