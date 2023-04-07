@@ -16,4 +16,4 @@ benchmarks/graphs
 
 *.key
 *.cert
-files/*
+files/
