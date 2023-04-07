@@ -177,10 +177,16 @@ app.get("/visit", auth.authenticateToken, async (req, res) => {
 });
 
 app.get("/visitCount", auth.authenticateToken, async (req, res) => {
+    let user;
+    if(req.query.user == undefined) {
+        user = req.payload.id;
+    } else {
+        user = req.query.user;
+    }
     const sql_query = "SELECT COUNT(v.id_visita) as conto from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ?";
 
     try {
-        let [rows] = await connection.query(sql_query, [req.payload.id]);
+        let [rows] = await connection.query(sql_query, [user]);
         res.status(200).send(rows[0]);
     } catch (err) {
         console.log(err);
@@ -189,9 +195,15 @@ app.get("/visitCount", auth.authenticateToken, async (req, res) => {
 });
 
 app.post("/visitRange", auth.authenticateToken, async (req, res) => {
+    let user;
+    if(req.body.user_id == undefined) {
+        user = req.payload.id;
+    } else {
+        user = req.body.user_id;
+    }
     const sql_query = "SELECT v.* from visita v, partecipa p WHERE p.fk_visita = v.id_visita AND p.fk_persona = ? ORDER BY v.stato ASC, v.data_programmata DESC LIMIT ? OFFSET ?";
     try {
-        let [rows] = await connection.query(sql_query, [req.payload.id, req.body.pageSize, req.body.pageIndex * req.body.pageSize]);
+        let [rows] = await connection.query(sql_query, [user, req.body.pageSize, req.body.pageIndex * req.body.pageSize]);
         res.status(200).send(rows);
     } catch (err) {
         console.log(err);
@@ -386,6 +398,17 @@ app.get("/caregivers", async (req, res) => {
 
     try {
         let [rows] = await connection.query(sql_query);
+        res.status(200).send(rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+});
+
+app.get("/peopleassisted", auth.authenticateToken, async (req, res) => {
+    const sql_query = "SELECT persona.* FROM persona WHERE fk_caregiver = ?";
+    try {
+        let [rows] = await connection.query(sql_query, [req.payload.id]);
         res.status(200).send(rows);
     } catch (err) {
         console.log(err);
