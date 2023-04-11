@@ -226,9 +226,9 @@ app.delete("/visit", auth.authenticateToken, async (req, res) => {
 });
 
 app.post("/visit", auth.authenticateToken, async (req, res) => {
-    const sql_query = "UPDATE honesto.visita SET ora_programmata = ?, data_programmata = ?, WHERE id_visita = ?";
+    const sql_query = "UPDATE honesto.visita SET ora_programmata = ?, data_programmata = ?, stato = ? WHERE id_visita = ?";
     try {
-        await connection.query(sql_query, [req.body.ora, req.body.data, req.body.id_visita]);
+        await connection.query(sql_query, [req.body.ora, req.body.data, req.body.id_visita, req.body.state]);
         res.status(200).send();
     } catch (err) {
         console.log(err);
