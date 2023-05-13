@@ -15,11 +15,14 @@
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
     "jsonwebtoken": "^9.0.0",
+    "kurento-client": "^7.0.0",
+    "minimist": "^1.2.8",
     "mysql2": "^3.2.0",
     "pdfkit": "^0.13.0",
     "peer": "^1.0.0",
     "socket.io": "^4.6.1",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "eslint": "^8.36.0"

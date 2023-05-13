@@ -464,9 +464,6 @@ const server = https
         },
         app
     )
-    .listen(process.env.HTTPS_PORT, () => {
-        console.log(`HTTPS server is running at port ${process.env.HTTPS_PORT}`);
-    });
 
 const peerServer = ExpressPeerServer(server, {
     path: "/connect",
@@ -539,7 +536,6 @@ io.on('connection', (socket) => {
     });
 });
 
- 
-
-
-
+server.listen(process.env.HTTPS_PORT, () => {
+    console.log(`HTTPS server is running at port ${process.env.HTTPS_PORT}`);
+});
