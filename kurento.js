@@ -342,7 +342,7 @@ function call(callerId, to, from, sdpOffer) {
     clearCandidatesQueue(callerId);
     var caller = userRegistry.getById(callerId);
     var rejectCause = 'User ' + to + ' is not registered';
-    console.log("SDP OFFER NULL!!!")
+
     console.log(caller)
 
     if (userRegistry.getByName(to)) {
