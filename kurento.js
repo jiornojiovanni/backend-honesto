@@ -411,4 +411,6 @@ function onIceCandidate(sessionId, _candidate) {
     }
 }
 
-server.listen(443);
+server.listen(process.env.KURENTO_PORT, () => {
+    console.log(`Kurento server is running at port ${process.env.KURENTO_PORT}`);
+});
