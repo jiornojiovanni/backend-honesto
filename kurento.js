@@ -11,8 +11,7 @@ const server = new https.createServer({
 //Kurento
 var argv = minimist(process.argv.slice(2), {
     default: {
-        as_uri: "https://localhost:4200/",
-        ws_uri: "ws://129.152.3.69:8888/kurento"
+        ws_uri: "ws://" + process.env.KMS_HOST + ":" + process.env.KMS_PORT + "/kurento"
     }
 });
 var kurentoClient = null;
