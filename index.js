@@ -155,7 +155,7 @@ app.put("/visit", auth.authenticateToken, async (req, res) => {
         await connection.query(insert_partecipa, [req.payload.id, insertId]);
         await connection.query(insert_partecipa, [other_id, insertId]);
 
-        res.status(200).send();
+        res.status(200).send({ visitID: insertId });
     } catch (err) {
         console.log(err);
         res.status(500).send();
