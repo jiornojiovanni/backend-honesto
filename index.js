@@ -496,7 +496,7 @@ io.on('connection', (socket) => {
     
     counter = io.sockets.adapter.rooms.get(stanza).size;
     console.log("Utenti: "+counter);
-    io.emit("userJoinedRoom", counter);
+    io.to(stanza).emit("userJoinedRoom", counter);
 
   });
  
