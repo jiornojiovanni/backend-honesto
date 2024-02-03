@@ -12,6 +12,7 @@ const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 const { ExpressPeerServer } = require("peer");
 const { Server } = require("socket.io");
+const csv = require("csv-stringify");
 
 const auth = require('./auth');
 
@@ -451,6 +452,80 @@ app.post("/visitname", auth.authenticateToken, async (req, res) => {
 }
 });
 
+app.delete("/deleteuser", auth.authenticateToken, async (req, res) => {
+    const deleteDocuments_query = "DELETE FROM documentazione d WHERE d.fk_visita  IN (SELECT v.id_visita  FROM visita v, partecipa p  WHERE v.id_visita = p.fk_visita AND p.fk_persona = ?)";
+    const visits_query = "SELECT v.id_visita FROM visita v, partecipa p  WHERE v.id_visita = p.fk_visita AND p.fk_persona = ?";
+    const deleteUsers_query = "DELETE FROM persona WHERE id_persona = ?";
+
+    const deleteVisit_query = "DELETE FROM visita WHERE id_visita = ?";
+    const deleteJoined_query = "DELETE FROM partecipa where fk_visita = ?";
+
+    try {
+
+        await connection.query(deleteDocuments_query, [req.payload.id]);
+
+        let [visits] = await connection.query(visits_query, [req.payload.id]);
+
+        for (let i = 0; i < visits.length; i++) {
+            await connection.query(deleteJoined_query, [visits[i].id_visita]);
+        }
+
+        for (let i = 0; i < visits.length; i++) {
+            await connection.query(deleteVisit_query, [visits[i].id_visita]);
+        }
+
+        await connection.query(deleteUsers_query, [req.payload.id]);
+
+        res.status(200).send({});
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).send();
+    }
+
+});
+
+app.get("/takeout", auth.authenticateToken, async (req, res) => {
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="' + 'download-' + Date.now() + '.csv"');
+    
+    const columns = [
+        "id",
+        "name",
+        "surname",
+        "email",
+        "telephone",
+        "birth",
+        "state",
+        "cap",
+        "type",
+        "visits"
+    ];
+
+    const userQuery = "SELECT * FROM persona WHERE id_persona = ?";
+    const visitsQuery = "SELECT v.* FROM persona p, visita v, partecipa p2  WHERE p.id_persona = ? AND p2.fk_persona = p.id_persona AND p2.fk_visita = v.id_visita ";
+
+    let [rows] = await connection.query(userQuery, [req.payload.id]);
+    let user = rows[0];
+
+    let [visits] = await connection.query(visitsQuery, [req.payload.id]);
+
+    const data = [{
+        id: user.id_persona,
+        name: user.nome,
+        surname: user.cognome,
+        email: user.mail,
+        telephone: user.telefono,
+        birth: user.data_nascita,
+        state: user.provincia,
+        cap: user.cap,
+        type: user.tipo,
+        visits: visits,
+    }];
+
+    csv.stringify(data, { header: true, columns: columns }).pipe(res);
+});
 
 app.listen(process.env.EXPRESS_PORT, () => {
     console.log(`Express server listening on port ${process.env.EXPRESS_PORT}`);
